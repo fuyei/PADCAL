@@ -4,7 +4,8 @@ h1 {
 	padding:.5em 0 .5em .2em;
 	font-size:2em;
 	color:#fff;
-	background:#15C5D5;
+	background:#ff7e00 url(../images/banner.png) no-repeat center right;
+	text-shadow:2px 2px #222;
 }
 
 ul,li {margin:0;padding:0;list-style: none;}
