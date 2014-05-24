@@ -1,0 +1,21 @@
+{
+  "name": "PADCAL",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app"
+  },
+  "dependencies": {
+    "express": "3.1.0",
+    "request": "latest"
+  },
+  "description": "ERROR: No README.md file found!",
+  "main": "app.js",
+  "author": "fuyei",
+  "license": "BSD",
+  "engines": {
+    "node": "0.8.x"
+  },
+  "devDependencies": {},
+  "repository": ""
+}

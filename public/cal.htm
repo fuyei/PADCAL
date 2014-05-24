@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAD Calculation</title>
+<link rel="stylesheet" href="./css/style.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<div id="wrapper">
+<h1> PAD Culculation</h1>
+  <div class="team">隊伍倍率: <input type="number" min="1" max="100" value="9" class="pt" /></div>
+  <table id="team-data">
+    <thead>
+      <tr>
+        <th>隊員</th>
+      </tr>
+      <tr class="atk-fields">
+        <th>攻擊力</th>
+        <th><input type="text" min="0" max="9999" maxlength="4" class="atk" pattern="\d*" value="1000" placeholder="攻擊力"></input></th>
+      </tr>
+      <tr class="twoway-fields">
+        <th>Two Way</th>
+        <th><input type="number" min="0" max="3" value="0" pattern="\d*" class="twoway" /> </th>
+      </tr>
+      <tr class="row-fields">
+        <th>橫排強化</th>
+        <th>
+          <input type="number" min="0" max="3" value="0" pattern="\d*" class="onerow" /> 
+        </th>
+      </tr>
+      <tr class="custom">
+        <td colspan="7">色珠 
+          <input type="number" min="0" max="30" value="3" pattern="\d*" class="orbs" />顆, 
+          <input type="number" min="0" max="30" value="3" pattern="\d*" class="orbs" />顆, 
+          <input type="number" min="0" max="30" value="0" pattern="\d*" class="orbs" />顆, 
+          <input type="number" min="0" max="30" value="0" pattern="\d*" class="orbs" />顆, 
+          <input type="number" min="0" max="30" value="0" pattern="\d*" class="orbs" />顆
+        </td>
+        <td>&nbsp;</td>
+      </tr>
+    </thead>
+    <tbody class="results">
+      <tr class="combo">
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+    </tbody>
+  </table>
+  <hr/>
+
+</div>
+
+<div id="footer"></div>
+<script>  
+  // var allowedKeycodes = [16,35,36,46,48,49,50,51,52,53,54,55,56,57,96,97,98,99,100,101,102,103,104,105];
+  var allowedKeycodes = [48,49,50,51,52,53,54,55,56,57];
+
+  $(document).ready(function() {
+    // render team settings
+    renderThead();
+
+    // render result table
+    renderResultTable();
+
+    // attach events 
+    $('.atk-fields input').keypress(function(e){
+      if($.inArray(e.which, allowedKeycodes)<0) {
+        e.preventDefault();
+      } 
+    }).change(function(e){
+      // console.log('change')
+    }).click(function(){
+      $(this).select();
+    }).focus(function(){
+      $(this).select();
+    });
+
+    $('input').on('change', updateResults);
+    
+    // first time rendor
+    updateResults();
+
+    function renderThead(){
+      var $thead = $('#team-data thead');
+      // add up input fields
+      for(var i=1; i<=7; i++) {
+        $thead.find('tr').eq(0).append('<th>'+ (i<7 ? i :'Total') +'</th>')
+        
+        if(i>1 && i<7){ // start from 2nd column
+          for (var j=1; j<4 ;j++) {
+            // 
+            var tr_tmp = $thead.find('tr').eq(j);
+            tr_tmp.find('th').eq(1).clone().appendTo(tr_tmp);
+          }
+        } else if(i==7) {
+          $thead.find('tr').eq(1).append('<th>&nbsp;</th>');
+          $thead.find('tr').eq(2).append('<th>&nbsp;</th>');
+          $thead.find('tr').eq(3).append('<th>&nbsp;</th>');
+        } 
+      } 
+    }
+
+    function renderResultTable() {
+      var $tbody = $('#team-data tbody');
+      var $combo  = $tbody.find('.combo').eq(0);
+      $combo.find('td').eq(0).text('1 combo');
+      for(var i=2; i<=10; i++) {
+        $combo.clone().appendTo($tbody).addClass('combo'+i).find('td').eq(0).text( i + ' combo');      
+      }
+      $combo.addClass('combo1');
+    }
+
+    function checkATK() {
+      var inputs = $('.atk-fields input');
+      for(var i=0; i<inputs.length; i++) {
+        if(inputs.eq(i).val()=='' || !$.isNumeric(inputs.eq(i).val())){
+          return false;
+          break;          
+        }
+      }
+      return true;
+    }
+    
+    function updateResults() {
+      if(!checkATK()) return;
+      var ATK = [];
+      var orbs = getOrbs();
+      var onerow = getOneRowAmp(orbs);
+      var pt = parseInt($('.pt').val());
+      $('input.atk').each(function(){ 
+        var v = parseInt($(this).val());
+        ATK.push(v*onerow); 
+      });
+      $('input.twoway').each(function(i){
+        var v=$(this).val();
+        var a = ATK[i];
+        if(v>0) { // update the base for two way skill
+          // a = a*(1+(0.5*v));
+        }
+      });
+
+      // update table
+      for(var combo = 1; combo<=10; combo++) {
+        var subtotal = 0;
+        $('tr.combo'+combo+' td').map(function(i){
+          if(i>0 && i<7) {
+            var data = {
+              combo:      combo,
+              orbs:       orbs,
+              atk:        ATK[i-1],
+              twoway:     parseInt($('input.twoway').eq(i-1).val()),
+              onerowAmp:  onerow
+            }
+            var dmg = Math.ceil(getDamage(data)*pt);
+            subtotal += dmg;
+            $(this).text( numberWithCommas(dmg));
+            // console.log(combo+' combo base: ', (1+(combo-1)*0.25))
+          } else if (i==7) {
+            $(this).text( numberWithCommas(subtotal) );
+          }
+        });
+      }
+    }
+
+    function getDamage(data){ 
+      var dmg = 0;
+      $.each(data.orbs, function(){
+        var _tmp = data.atk * (1+ (data.combo-1)*0.25) * (1+(this-3)*0.25);
+        if(this==4 && data.twoway >0 ) {
+          _tmp = _tmp * (1.5*data.twoway);
+        }
+        dmg +=  _tmp * data.onerowAmp;
+      })
+      return dmg;
+    }
+
+    function getOneRowAmp(arr){ 
+      var v = 0; 
+      $.each(arr,function(){
+        if($.isNumeric(this) && parseInt(this)>5) {v++;}
+      });
+      var s = 0;
+      $('input.onerow').map(function(){
+        if(parseInt($(this).val())>0) {s+= parseInt($(this).val());}
+      })
+      // console.log('one row base: '+ (1+ v*s*0.1) );
+      return 1+(v*s)*0.1;
+    }
+    
+    function getTwoWayOrbs(arr) {
+      var v = 0;
+      $.each(arr,function(){
+        if($.isNumeric(this) && parseInt(this)==4) {v++;}
+      });
+
+      return v;
+    }
+
+    function orbAmp(atk) {
+
+    }
+
+    function getOrbs() {
+      var arr = [];
+      $('input.orbs').map(function(){
+        var v = $(this).val();
+        if($.isNumeric(v) && v>2) {arr.push(parseInt(v));}
+      });
+      return arr;
+    }
+
+    function numberWithCommas(x) {
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+  });// end of onload
+</script>
+
+</body>
+</html>
