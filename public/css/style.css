@@ -19,7 +19,9 @@ a.selected {font-weight:bold;}
 .atk {width:4em;}
 td,th {padding:.5em; background:#f7f7f7;}
 
-.team {padding:1em 1em 0em 1em;}
+.meta {padding:1em 1em 0em 1em;}
+.meta label {padding-right:2em;}
+.def {width:5em;}
 .rbs {
 	width:3.5em;
 

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset='utf-8'>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=0.6">
 <title>PAD 傷害計算 </title>
 <link rel="stylesheet" href="./css/style.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -10,7 +10,10 @@
 <body>
 <div id="wrapper">
 <h1> PAD 傷害計算</h1>
-  <div class="team">隊伍倍率: <input type="number" min="1" max="100" value="9" class="pt" /></div>
+  <div class="meta">
+    <label>隊伍倍率: <input type="number" min="1" max="100" value="9" class="pt"  /></label>
+    <label>BOSS防禦力: <input type="number" min="0" value="0" class="def" pattern="\d*" /></label>
+  </div>
   <table id="team-data">
     <thead>
       <tr>
@@ -127,7 +130,8 @@
       var ATK = [];
       var orbs = getOrbs();
       var onerow = getOneRowAmp(orbs);
-      var pt = parseInt($('.pt').val());
+      var pt  = parseFloat($('.pt').val()).toFixed(2)||1;
+      var def = parseInt($('.def').val())||0;
       $('input.atk').each(function(){ 
         var v = parseInt($(this).val());
         ATK.push(v*onerow); 
@@ -152,7 +156,7 @@
               twoway:     parseInt($('input.twoway').eq(i-1).val()),
               onerowAmp:  onerow
             }
-            var dmg = Math.ceil(getDamage(data)*pt);
+            var dmg = Math.ceil(getDamage(data)*pt) - def;
             subtotal += dmg;
             $(this).text( numberWithCommas(dmg));
             // console.log(combo+' combo base: ', (1+(combo-1)*0.25))
