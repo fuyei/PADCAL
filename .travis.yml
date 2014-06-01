@@ -1,4 +1,0 @@
-deploy:
-  provider: heroku
-  api_key: bdbef8c5-dc48-40ed-890b-511b600c45a4
-  app: apk
